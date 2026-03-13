@@ -1,0 +1,30 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<SiteLayout title={`404 | ${SITE_TITLE}`} description="找不到你要访问的页面。">
+	<section class="panel missing">
+		<p class="eyebrow">404</p>
+		<h1>这个页面不存在</h1>
+		<p>链接可能已经失效，或者内容还没有发布。</p>
+		<div class="actions">
+			<a class="button" href="/">回到首页</a>
+			<a class="button secondary" href="/blog/">查看文章列表</a>
+		</div>
+	</section>
+</SiteLayout>
+
+<style>
+	.missing {
+		padding: clamp(1.5rem, 4vw, 3rem);
+		text-align: center;
+	}
+	.actions {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.9rem;
+		margin-top: 1.5rem;
+	}
+</style>

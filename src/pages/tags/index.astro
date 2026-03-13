@@ -1,0 +1,62 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { SITE_TITLE } from '../../consts';
+import { getAllTags, getPublishedPosts } from '../../utils/blog';
+
+const posts = await getPublishedPosts();
+const tags = getAllTags(posts);
+---
+
+<SiteLayout title={`标签 | ${SITE_TITLE}`} description="按标签浏览博客文章。">
+	<section class="page-intro panel">
+		<p class="eyebrow">Tags</p>
+		<h1>标签归档</h1>
+		<p>用标签快速定位主题。当前共有 {tags.length} 个标签。</p>
+	</section>
+
+	<section class="tags-grid">
+		{
+			tags.map((item) => (
+				<a class="panel tag-card" href={`/tags/${item.slug}/`}>
+					<span class="name">#{item.tag}</span>
+					<span class="count">{item.count} 篇文章</span>
+				</a>
+			))
+		}
+	</section>
+</SiteLayout>
+
+<style>
+	.page-intro {
+		padding: clamp(1.25rem, 3vw, 2rem);
+		margin-bottom: 1.25rem;
+	}
+	.page-intro p:last-of-type {
+		color: rgb(var(--muted));
+	}
+	.tags-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+	}
+	.tag-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 1.25rem;
+		text-decoration: none;
+	}
+	.name {
+		font-size: 1.1rem;
+		font-weight: 800;
+		color: rgb(var(--ink));
+	}
+	.count {
+		color: rgb(var(--muted));
+	}
+	@media (max-width: 900px) {
+		.tags-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

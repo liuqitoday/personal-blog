@@ -1,62 +1,79 @@
-# Astro Starter Kit: Blog
+# Personal Blog
+
+一个基于 `Astro + GitHub + Cloudflare Pages` 的个人博客项目。
+
+## 已完成的能力
+
+- Markdown / MDX 内容系统
+- 博客列表页、文章详情页、标签页、关于页、404
+- RSS 和 sitemap
+- 面向 Cloudflare Pages 的静态构建
+- GitHub 仓库工作流
+
+## 本地开发
 
 ```sh
-npm create astro@latest -- --template blog
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+常用命令：
 
-Features:
+- `npm run dev`：启动本地开发服务器
+- `npm run build`：构建生产环境静态文件
+- `npm run preview`：预览构建结果
+- `npm run check`：运行 Astro 类型检查
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+## 你最先要改的地方
 
-## 🚀 Project Structure
+1. `src/consts.ts`
+2. `src/content/blog/`
+3. `src/pages/about.astro`
 
-Inside of your Astro project, you'll see the following folders and files:
+## 项目结构
 
 ```text
-├── public/
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+src/
+  components/     可复用组件
+  content/blog/   博客文章
+  layouts/        页面布局
+  pages/          路由页面
+  styles/         全局样式
+  utils/          博客数据辅助函数
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## GitHub
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+推荐仓库名：`personal-blog`
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+如果你还没有把项目推到 GitHub，可以执行：
 
-Any static assets, like images, can be placed in the `public/` directory.
+```sh
+gh repo create personal-blog --public --source=. --remote=origin --push
+```
 
-## 🧞 Commands
+## Cloudflare Pages
 
-All commands are run from the root of the project, from a terminal:
+如果你希望保留 `GitHub -> Cloudflare Pages` 自动部署，不要先用 `wrangler pages deploy` 直传。
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+推荐做法：
 
-## 👀 Want to learn more?
+1. 在 Cloudflare Pages 里选择 `Connect to Git`。
+2. 选择 GitHub 仓库 `liuqitoday/personal-blog`。
+3. 构建参数使用：
+   - Framework preset: `Astro`
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+4. 设置环境变量：
+   - `SITE_URL=https://<your-project>.pages.dev`
+5. 如果后续绑定自定义域名，把 `SITE_URL` 改成正式域名。
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## 说明
 
-## Credit
+`astro.config.mjs` 已支持以下优先级：
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+1. `SITE_URL`
+2. `CF_PAGES_URL`
+3. `https://personal-blog.pages.dev`
+
+这可以保证 RSS、sitemap 和 canonical URL 在 Pages 上有稳定输出。
