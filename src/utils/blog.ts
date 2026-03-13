@@ -10,13 +10,29 @@ export async function getPublishedPosts() {
 		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 }
 
+export function normalizePath(path: string) {
+	return path.replace(/^\/+|\/+$/g, '');
+}
+
 export function slugifyTag(tag: string) {
-	return tag
+	const normalized = tag
 		.toLowerCase()
 		.trim()
 		.replace(/&/g, ' and ')
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '');
+
+	const asciiSlug = normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+	return asciiSlug || tag.trim();
+}
+
+export function getPostPath(post: BlogEntry) {
+	return post.data.permalink ? normalizePath(post.data.permalink) : `blog/${post.id}`;
+}
+
+export function getPostUrl(post: BlogEntry) {
+	return `/${getPostPath(post)}/`;
 }
 
 export function getAllTags(posts: BlogEntry[]) {

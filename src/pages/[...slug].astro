@@ -1,15 +1,19 @@
 ---
 import { type CollectionEntry, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
-import { getPublishedPosts } from '../../utils/blog';
+import BlogPost from '../layouts/BlogPost.astro';
+import { getPublishedPosts, normalizePath } from '../utils/blog';
 
 export async function getStaticPaths() {
 	const posts = await getPublishedPosts();
-	return posts.filter((post) => !post.data.permalink).map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+
+	return posts
+		.filter((post) => post.data.permalink)
+		.map((post) => ({
+			params: { slug: normalizePath(post.data.permalink ?? '') },
+			props: post,
+		}));
 }
+
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;

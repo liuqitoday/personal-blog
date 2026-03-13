@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import FormattedDate from './FormattedDate.astro';
 import TagList from './TagList.astro';
+import { getPostUrl } from '../utils/blog';
 
 interface Props {
 	post: CollectionEntry<'blog'>;
@@ -10,12 +11,13 @@ interface Props {
 }
 
 const { post, featured = false } = Astro.props;
+const postUrl = getPostUrl(post);
 ---
 
 <article class:list={['post-card', 'panel', { featured }]}>
 	{
 		post.data.heroImage && (
-			<a class="cover" href={`/blog/${post.id}/`} aria-label={`Read ${post.data.title}`}>
+			<a class="cover" href={postUrl} aria-label={`Read ${post.data.title}`}>
 				<Image
 					width={900}
 					height={540}
@@ -30,7 +32,7 @@ const { post, featured = false } = Astro.props;
 			<FormattedDate date={post.data.pubDate} />
 		</p>
 		<h2>
-			<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+			<a href={postUrl}>{post.data.title}</a>
 		</h2>
 		<p class="description">{post.data.description}</p>
 		<TagList tags={post.data.tags} />

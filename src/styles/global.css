@@ -149,6 +149,49 @@ pre > code {
 	all: unset;
 }
 
+figure {
+	margin: 1.6rem 0;
+}
+
+figure.highlight {
+	margin: 1.8rem 0;
+	border-radius: 1rem;
+	background: #221b17;
+	overflow: hidden;
+}
+
+figure.highlight table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+figure.highlight td {
+	padding: 0;
+	border-bottom: none;
+	vertical-align: top;
+}
+
+figure.highlight pre {
+	margin: 0;
+	padding: 1rem 1.15rem;
+	background: transparent;
+	color: #f8f4ef;
+}
+
+figure.highlight .gutter {
+	width: 1%;
+	border-right: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(255, 255, 255, 0.04);
+}
+
+figure.highlight .gutter pre {
+	color: rgba(255, 255, 255, 0.42);
+}
+
+figure.highlight .code {
+	width: 100%;
+}
+
 blockquote {
 	margin: 2rem 0;
 	padding: 1rem 1.2rem;
