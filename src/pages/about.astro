@@ -3,46 +3,48 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import { SITE_AUTHOR, SITE_REPOSITORY_URL, SITE_TITLE } from '../consts';
 ---
 
-<SiteLayout title={`关于 | ${SITE_TITLE}`} description="站点说明、内容范围以及需要替换的个人信息。">
+<SiteLayout title={`关于 | ${SITE_TITLE}`} description="关于作者与博客写作方向。">
 	<section class="page-intro panel">
 		<p class="eyebrow">About</p>
-		<h1>关于这个博客</h1>
+		<h1>关于我</h1>
 		<p>
-			这不是一段虚构的个人简介，而是一份已经接好功能的博客骨架。你可以把这里改成
-			{SITE_AUTHOR}
-			的真实介绍，也可以直接重写成自己的作品集或长期笔记页。
+			我是 {SITE_AUTHOR}，一名程序员，喜欢折腾各种技术方案并把过程沉淀成可复用经验。从代码实现到网络环境配置，
+			我都更关注“为什么这样做”和“怎么稳定落地”。这个博客会持续分享真实实践、排障过程和方法总结。
 		</p>
 	</section>
 
 	<section class="content-grid">
 		<div class="panel">
-			<h2>默认已经配置好的内容</h2>
+			<h2>主要分享内容</h2>
 			<ul>
-				<li>Markdown / MDX 写作</li>
-				<li>RSS 与 sitemap</li>
-				<li>标签归档页</li>
-				<li>适合 Cloudflare Pages 的静态构建</li>
+				<li>软件开发与工程实践</li>
+				<li>效率工具与工作流优化</li>
+				<li>家庭网络与 OpenWrt 折腾记录</li>
+				<li>AI 工具应用与教程</li>
 			</ul>
 		</div>
 		<div class="panel">
-			<h2>优先替换的地方</h2>
+			<h2>联系与站点信息</h2>
 			<ul>
-				<li><code>src/consts.ts</code>：站点标题、作者、仓库地址</li>
-				<li><code>src/content/blog/</code>：文章 frontmatter 和正文</li>
-				<li><code>src/pages/about.astro</code>：真实个人介绍</li>
+				<li>
+					联系邮箱：
+					<a href="mailto:liuqitoday@163.com">liuqitoday@163.com</a>
+				</li>
+				<li>
+					源码仓库：
+					<a href={SITE_REPOSITORY_URL} target="_blank">GitHub</a>
+				</li>
+				<li>内容格式：Markdown / MDX</li>
+				<li>订阅地址：<a href="/rss.xml">RSS</a></li>
 			</ul>
 		</div>
 	</section>
 
 	<section class="panel">
-		<h2>推荐的写作范围</h2>
+		<h2>写作说明</h2>
 		<p>
-			个人博客不需要把所有内容都写成教程。更值得长期积累的通常是：项目复盘、工具链配置、
-			系统运维经验、读书和思考记录，以及你愿意持续更新的主题。
-		</p>
-		<p>
-			如果你准备公开这个仓库，当前默认地址会指向
-			<a href={SITE_REPOSITORY_URL} target="_blank">GitHub 仓库</a>。后续如果你改了仓库名，记得一起更新。
+			文章会尽量保持结构化：先交代场景和目标，再给出可执行步骤，最后补充排错思路和注意事项。
+			如果某篇内容有更好的实现方式，欢迎邮件交流。
 		</p>
 	</section>
 </SiteLayout>
