@@ -45,7 +45,7 @@ category: "net"
 
 - **IGMP Snooping（防泛洪）**：属于二层能力，主要防止组播流量在局域网内泛洪（一开电视全网卡死，优先怀疑它）。
 - **IGMP Proxy（跨网段）**：属于三层能力，负责让组播流量跨越不同网段转发（光猫直连能看，接路由器不行，优先怀疑它）。
-- 如果我们使用 `rtp2httpd` 转换组播为 HTTP，局域网内的最终流量主要是单播，此时 Snooping 不是绝对必需项，但 Proxy 往往有助于将流引入路由器本机。
+- 如果我们使用 `rtp2httpd` 转换组播为 HTTP，局域网内的最终流量主要是单播，此时 Snooping 不是绝对必需项。而 `rtp2httpd` 等转换工具会通过 Linux 内核 Socket 机制自行加入组播组，**通常不需要额外安装 igmpproxy**。两者同时运行反而可能互相争抢 IGMP 报文，导致频道卡顿或假死。如果不装 igmpproxy 时确实收不到组播流，再将其作为排障手段尝试。
 
 ------
 
@@ -58,7 +58,7 @@ category: "net"
    - **设备**偏向底层物理或数据链路层，例如 `wan`、`eth1`、`wan.30`、`eth1.30`（VLAN 子设备）。
    - **接口**偏向协议层，例如将 PPPoE 或 DHCP 协议绑定到特定的底层设备上。
 3. **不要随便乱动 `br-lan`**：在单线复用的第一阶段，我们只需在 WAN 侧物理设备上拆分逻辑接口，除非你需要专门划分一个物理 LAN 口给机顶盒，否则一开始不需要去配置桥 VLAN 过滤。
-4. **包管理器变更**：官方 OpenWrt 24.10 在很多场景下已经将包管理器从 `opkg` 切换为了 `apk`，安装插件前请先用 `which apk` 确认。
+4. **包管理器注意**：OpenWrt 24.10 稳定版仍使用 `opkg`，但未来的版本（如 snapshot / 主线分支）已切换为 `apk`。安装插件前请根据自己的固件版本使用对应的命令。
 
 ------
 
@@ -88,6 +88,7 @@ category: "net"
 3. **协议选择策略**：
    - **先试 DHCP 客户端**：适合大多数地区的第一步验证。
    - **如果当地明确要求 PPPoE**：部分地区 IPTV 需要独立拨号，请按实际情况选择 PPPoE 并填入机顶盒专用账号。
+   - **排障提示**：如果选择 DHCP 后长时间无法获取 IP 地址，可能是运营商对 IPTV 专网开启了 DHCP 鉴权白名单。你需要通过抓包机顶盒的开机 DHCP 流程，获取正确的 Vendor Class 字符串（DHCP Option 60），并在接口"高级设置"中的"发送的 DHCP 选项"里填入。
 4. 进入该接口的“高级设置”，**务必进行以下操作**（防止干扰正常上网）：
    - 取消勾选“使用默认网关”。
    - 关闭“使用对端通告的 DNS 服务器”。
@@ -98,34 +99,36 @@ category: "net"
 
 1. 进入“网络 → 防火墙”，新增一个名为 `iptv` 的 zone（区域）。
 2. 覆盖网络勾选刚才建立的 `iptv` 接口。
-3. 基本策略设置为：**入站 (Input) ACCEPT，出站 (Output) ACCEPT，转发 (Forward) REJECT**。
+3. 基本策略设置为：**入站 (Input) ACCEPT，出站 (Output) ACCEPT，转发 (Forward) REJECT**。这是便于初期调试的宽松配置，待 IPTV 稳定运行后，建议将入站策略收紧为 REJECT，并仅放行 IGMP 等必要协议。
 4. **关于动态伪装（Masquerading）**：直播阶段建议先不开启；如果后续发现单播、回看或平台接口无法访问，再重点尝试将 masquerading 打开。
 
 ### 第 5 步：安装与配置 rtp2httpd
 
-`rtp2httpd` 能够将 IPTV 组播流转换为 HTTP 流，大大降低局域网设备播放的门槛。
+[rtp2httpd](https://rtp2httpd.com) 是一个社区开源项目，能够将 IPTV 组播（RTP/UDP）流转换为 HTTP 单播流，大大降低局域网设备播放的门槛。它还支持 FCC 快速换台、内置 Web 播放器等进阶功能。
+
+> **备注**：OpenWrt 官方仓库中的同类工具是 `udpxy`（可通过 `opkg install udpxy` 直接安装），功能较为基础但开箱即用。本文推荐功能更完善的 rtp2httpd。
 
 **安装过程**：
 
-如果您使用的是官方 OpenWrt 24.10：
+通过 SSH 连接路由器，执行 rtp2httpd 官方提供的一键安装脚本（脚本会自动检测 CPU 架构并下载对应版本）：
 
 ```bash
-apk update
-apk add tcpdump igmpproxy rtp2httpd luci-app-rtp2httpd
+uclient-fetch -q -O - https://raw.githubusercontent.com/stackia/rtp2httpd/main/scripts/install-openwrt.sh | sh
 ```
 
-如果您的系统仍然使用 opkg，则将 `apk add` 替换为 `opkg install`。
+安装完成后会自动部署主程序、LuCI 管理界面和语言包。更多安装方式请参考 [rtp2httpd 官方文档](https://rtp2httpd.com/guide/installation)。
 
 **配置服务**：
 
-1. 在 LuCI 的“服务”菜单中找到 `rtp2httpd`。
-2. **监听地址**设为 `0.0.0.0` 或路由器局域网 IP，端口通常默认即可（如 `4022`）。
-3. **上游组播接口**与**上游单播接口**：极其关键，通常都需要指定为你创建的 `iptv` 接口（或其底层设备）。接口配错是导致“服务启动了但播不出画面”的最常见原因。
+1. 在 LuCI 的”服务”菜单中找到 `rtp2httpd`，勾选”启用”。
+2. **端口**默认为 `5140`，通常无需修改。
+3. **上游接口**：极其关键，需要指定为你创建的 `iptv` 接口（或其底层设备）。接口配错是导致”服务启动了但播不出画面”的最常见原因。
 
 ### 第 6 步：测试验证
 
-1. 在浏览器访问 `http://路由器LAN地址:4022/status`，确认服务运行正常且不报错。
-2. 寻找当地运营商的已知有效组播地址，使用播放器测试 HTTP 流，格式通常为 `http://192.168.1.1:4022/rtp/239.x.x.x:port`。
+1. 在浏览器访问 `http://路由器LAN地址:5140/status`，确认服务运行正常且不报错。
+2. 寻找当地运营商的已知有效组播地址，使用播放器测试 HTTP 流，格式通常为 `http://192.168.1.1:5140/rtp/239.x.x.x:port`。
+3. 如果你配置了 M3U 播放列表，还可以直接访问 `http://路由器LAN地址:5140/player` 使用 rtp2httpd 内置的 Web 播放器在浏览器中观看。
 
 ------
 
