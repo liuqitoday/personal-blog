@@ -102,18 +102,23 @@ Agent = LLM + Tools + Loop
 可以把这个判断画成一个更直观的四象限：
 
 ```mermaid
-quadrantChart
-  title 什么时候该用 Agent？
-  x-axis 任务目标模糊 --> 任务目标明确
-  y-axis 验证难以自动化 --> 验证可自动化
-  quadrant-1 最适合 Agent
-  quadrant-2 可做，但吞吐量受人工审核限制
-  quadrant-3 不适合高自主度 Agent
-  quadrant-4 容易高效做错事
-  改代码 / 跑测试 / 修 CI: [0.84, 0.9]
-  客服人工复核: [0.82, 0.34]
-  开放式研究: [0.22, 0.2]
-  目标不清但有自动反馈: [0.32, 0.82]
+flowchart TB
+  note["判断维度：<br/>从左到右，任务目标从模糊到明确"]
+
+  subgraph high["验证可自动化"]
+    direction LR
+    risky["目标较模糊<br/>容易高效做错事"]
+    ideal["目标明确<br/>最适合 Agent<br/>例如：改代码、跑测试、修 CI"]
+  end
+
+  subgraph low["验证难以自动化"]
+    direction LR
+    weak["目标较模糊<br/>不适合高自主度 Agent"]
+    manual["目标明确<br/>可以做<br/>但吞吐量受人工审核限制"]
+  end
+
+  note -.-> high
+  note -.-> low
 ```
 
 ## 3. 核心组件拆解
