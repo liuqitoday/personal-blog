@@ -291,10 +291,10 @@ python3 scripts/query_data.py \
 
 ## 七、第六层：真正执行时，Codex 依赖的是函数工具，而不是模型直接访问外部世界
 
-在这次日志里，Codex 不是通过 OpenAI 官方的 `shell` tool 直接执行命令，而是通过应用暴露给它的函数工具：
+从这两份日志看，Codex 不是通过 OpenAI 官方的 `shell` tool 直接执行命令，而是通过应用暴露给它的函数工具：
 
 - `exec_command`
-- `write_stdin`
+- `write_stdin`（用于长任务或 PTY 会话轮询，不是每次 skill 调用都会用到）
 
 也就是说，Codex 运行在一个自定义 agent runtime 上。
 
@@ -320,8 +320,11 @@ sequenceDiagram
   Script->>API: HTTP 请求时序数据
   API-->>Script: 返回数据点
   Script-->>Runtime: stdout 输出表格
-  Model->>Runtime: write_stdin(session_id)
-  Runtime-->>Model: 返回脚本完整输出
+  opt 长任务分支
+    Runtime-->>Model: 返回 session_id
+    Model->>Runtime: write_stdin(session_id)
+    Runtime-->>Model: 返回脚本完整输出
+  end
   Model-->>User: 整理成 Markdown 表格
 ```
 
@@ -343,34 +346,38 @@ sequenceDiagram
 - runtime 负责执行
 - 脚本负责确定性业务逻辑
 
+这里新日志还补充了一个很重要的细节：
+
+- 短命令可以直接在 `exec_command` 里返回完整 stdout
+- 长命令才会先返回 `session_id`，再由模型通过 `write_stdin` 轮询
+
+所以 `write_stdin` 更像 runtime 能力的一部分，而不是每次 skill 执行都必经的固定步骤。
+
 ## 八、第七层：Codex 的 agent loop 不是“一次请求结束”，而是多轮推进
 
-日志里还有一个特别容易被忽视的细节。
+两份日志一起看，这个代理的工具执行至少有两条路径：
 
-查询命令第一次执行后，并没有立刻得到完整结果，而是返回：
+### 1. 短命令路径
+
+```text
+exec_command -> 直接返回完整输出 -> 模型继续整理答案
+```
+
+这次新的查询日志就是这种情况。脚本在一次 `exec_command` 里直接退出，stdout 立刻回到模型。
+
+### 2. 长命令路径
+
+```text
+exec_command -> 返回 session_id -> write_stdin 轮询 -> 模型继续整理答案
+```
+
+上一篇分析所基于的那份日志里，查询脚本第一次执行后返回的是：
 
 ```text
 Process running with session ID 59850
 ```
 
-然后模型继续给用户发 commentary：
-
-```text
-查询命令已经发出，正在等接口返回结果。我先收一下输出，看这段时间内是否有数据点。
-```
-
-接着又调用了：
-
-```json
-{
-  "name": "write_stdin",
-  "arguments": {
-    "session_id": 59850,
-    "chars": "",
-    "yield_time_ms": 1000
-  }
-}
-```
+然后模型继续发 commentary，并调用 `write_stdin(session_id)` 去收输出。
 
 这说明 Codex 的执行不是传统的一次 RPC，而是一个持续 loop：
 
@@ -395,6 +402,14 @@ Agent loop 是：
 ```
 
 而 skill 在这里扮演的角色，就是把“这类任务应该怎么循环推进”提前定义好。
+
+新日志还把另一个实现细节暴露得更清楚：proxy 侧会把流式输出整理成 `stream assembled` 的单条响应日志，但工具调用结果并不是总出现在同一条响应里。很多时候，模型先在响应里给出 `function_call`，然后应用把 `function_call_output` 填回下一次请求体，再继续下一轮推理。
+
+所以从日志视角看，这个 loop 的真正边界更像是：
+
+```text
+response(function_call) -> runtime执行 -> next request(function_call_output) -> next response
+```
 
 ## 九、第八层：这套实现并不是 OpenAI 官方托管 Skills API，而是应用层协议
 
