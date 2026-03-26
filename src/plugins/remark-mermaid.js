@@ -18,7 +18,7 @@ export default function remarkMermaid() {
 
 			parent.children[index] = {
 				type: 'html',
-				value: `<div class="mermaid-wrapper"><pre class="mermaid">${escapeHtml(node.value.trim())}</pre></div>`,
+				value: `<div class="mermaid-wrapper"><div class="mermaid">${escapeHtml(node.value.trim())}</div></div>`,
 			};
 		});
 	};

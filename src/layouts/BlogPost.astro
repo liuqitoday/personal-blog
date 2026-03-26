@@ -41,7 +41,7 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 	<script>
 		import mermaid from 'mermaid';
 
-		const selector = '.prose pre.mermaid';
+		const selector = '.prose .mermaid-wrapper > .mermaid';
 
 		mermaid.initialize({
 			startOnLoad: false,
@@ -125,15 +125,15 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 		background: rgba(255, 255, 255, 0.92);
 		box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
 	}
-	.prose :global(pre.mermaid) {
+	.prose :global(.mermaid-wrapper > .mermaid) {
 		display: flex;
 		justify-content: center;
-		min-width: max-content;
 		margin: 0;
 		padding: 1.25rem;
 		background: transparent;
 	}
 	.prose :global(.mermaid-wrapper svg) {
 		height: auto;
+		max-width: 100%;
 	}
 </style>
