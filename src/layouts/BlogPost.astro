@@ -38,6 +38,33 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 			<slot />
 		</div>
 	</article>
+	<script>
+		import mermaid from 'mermaid';
+
+		const selector = '.prose pre.mermaid';
+
+		mermaid.initialize({
+			startOnLoad: false,
+			securityLevel: 'strict',
+			theme: 'neutral',
+		});
+
+		const renderMermaid = () => {
+			if (!document.querySelector(selector)) {
+				return;
+			}
+
+			mermaid.run({ querySelector: selector });
+		};
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', renderMermaid, { once: true });
+		} else {
+			renderMermaid();
+		}
+
+		document.addEventListener('astro:page-load', renderMermaid);
+	</script>
 </SiteLayout>
 
 <style>
@@ -89,5 +116,24 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 		width: min(760px, 100%);
 		margin: 0 auto;
 		padding-top: 2.25rem;
+	}
+	.prose :global(.mermaid-wrapper) {
+		margin: 1.75rem 0;
+		overflow-x: auto;
+		border: 1px solid rgba(var(--line), 0.9);
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.92);
+		box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+	}
+	.prose :global(pre.mermaid) {
+		display: flex;
+		justify-content: center;
+		min-width: max-content;
+		margin: 0;
+		padding: 1.25rem;
+		background: transparent;
+	}
+	.prose :global(.mermaid-wrapper svg) {
+		height: auto;
 	}
 </style>
