@@ -99,26 +99,26 @@ Agent = LLM + Tools + Loop
 
 对 Coding Agent 来说，代码修改、测试运行、日志分析、PR 修复这类任务特别适合，因为目标相对明确，也容易绑定自动化反馈。相反，开放式研究、模糊创作、多方协商这类任务，对模型本身的上限依赖更高，工程补强能解决的问题有限。
 
-可以把这个判断画成一个更直观的四象限：
+可以把这个判断画成一个更直观的二维判断图：
 
 ```mermaid
 flowchart TB
-  note["判断维度：<br/>从左到右，任务目标从模糊到明确"]
+  note["判断时同时看两件事：<br/>1. 验证是否可以自动化<br/>2. 任务目标是否明确"]
 
-  subgraph high["验证可自动化"]
-    direction LR
+  subgraph auto["验证可自动化"]
+    direction TB
     risky["目标较模糊<br/>容易高效做错事"]
     ideal["目标明确<br/>最适合 Agent<br/>例如：改代码、跑测试、修 CI"]
   end
 
-  subgraph low["验证难以自动化"]
-    direction LR
+  subgraph hard["验证难以自动化"]
+    direction TB
     weak["目标较模糊<br/>不适合高自主度 Agent"]
     manual["目标明确<br/>可以做<br/>但吞吐量受人工审核限制"]
   end
 
-  note -.-> high
-  note -.-> low
+  note -.-> auto
+  note -.-> hard
 ```
 
 ## 3. 核心组件拆解
