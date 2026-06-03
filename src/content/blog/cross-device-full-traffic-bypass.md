@@ -72,14 +72,27 @@ tun:
   auto-route: true
   auto-detect-interface: true
 
-# 2. 将出口端配置为"唯一出口节点"
+# 2. 显式接管 DNS，彻底干掉外网加密 DNS，全面拥抱公司内网
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+  # 这里只填写从出口端 ipconfig/ifconfig 查到的【公司纯内网 DNS IP】
+  nameserver:
+    - 10.0.0.53            # ⚠️ 替换为你们公司真正的内网 DNS IP
+    - 10.0.0.54
+
+# 3. 将出口端配置为"唯一出口节点"
 proxies:
   - name: "公司出口网关"
     type: socks5
-    server: 10.4.109.224  # ⚠️ 务必修改：替换为出口端设备的实际局域网 IP
-    port: 7890
+    server: 192.168.1.100    # ⚠️ 务必修改：替换为出口端设备的实际局域网 IP
+    port: 7897              # 注意端口号需与出口端 Clash 混合端口一致
+    udp: true
 
-# 3. 核心规则：本机所有流量，无条件全部打包扔给出口端
+# 4. 核心规则：本机所有流量，无条件全部打包扔给出口端
 rules:
   - MATCH,公司出口网关
 ```
