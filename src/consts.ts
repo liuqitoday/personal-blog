@@ -19,4 +19,4 @@ export const EXTERNAL_LINKS = [
 	{ href: '/rss.xml', label: 'RSS' },
 ];
 
-export const TECH_STACK = ['Astro 6', 'Markdown / MDX', 'GitHub', 'Cloudflare Pages'];
+export const TECH_STACK = ['Astro 7', 'Markdown / MDX', 'GitHub', 'Cloudflare Pages'];

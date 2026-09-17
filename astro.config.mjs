@@ -3,7 +3,7 @@
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import remarkMermaid from './src/plugins/remark-mermaid.js';
 
 /** @param {string | undefined} url */
@@ -30,4 +30,28 @@ export default defineConfig({
 		},
 	},
 	integrations: [mdx(), sitemap()],
+	fonts: [
+		{
+			provider: fontProviders.local(),
+			name: 'Atkinson',
+			cssVariable: '--font-atkinson',
+			fallbacks: ['sans-serif'],
+			options: {
+				variants: [
+					{
+						src: ['./src/assets/fonts/atkinson-regular.woff'],
+						weight: 400,
+						style: 'normal',
+						display: 'swap',
+					},
+					{
+						src: ['./src/assets/fonts/atkinson-bold.woff'],
+						weight: 700,
+						style: 'normal',
+						display: 'swap',
+					},
+				],
+			},
+		},
+	],
 });
