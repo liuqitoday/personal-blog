@@ -14,7 +14,7 @@ const { post, featured = false } = Astro.props;
 const postUrl = getPostUrl(post);
 ---
 
-<article class:list={['post-card', 'panel', { featured }]}>
+<article class:list={['post-card', 'panel', { featured, 'has-cover': Boolean(post.data.heroImage) }]}>
 	{
 		post.data.heroImage && (
 			<a class="cover" href={postUrl} aria-label={`Read ${post.data.title}`}>
@@ -44,9 +44,13 @@ const postUrl = getPostUrl(post);
 		display: grid;
 		overflow: hidden;
 	}
-	.featured {
-		grid-column: span 2;
+	.has-cover {
 		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+	}
+	@media (max-width: 900px) {
+		.has-cover {
+			grid-template-columns: 1fr;
+		}
 	}
 	.cover {
 		display: block;
@@ -87,11 +91,5 @@ const postUrl = getPostUrl(post);
 	.date {
 		font-size: 0.92rem;
 		font-weight: 700;
-	}
-	@media (max-width: 900px) {
-		.featured {
-			grid-column: auto;
-			grid-template-columns: 1fr;
-		}
 	}
 </style>
