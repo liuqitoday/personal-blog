@@ -21,6 +21,7 @@ export default {
     editPage: "编辑此页",
     previousPost: "上一篇",
     nextPost: "下一篇",
+    views: "次阅读",
   },
   pagination: {
     prev: "上一页",
@@ -36,6 +37,8 @@ export default {
   footer: {
     copyright: "版权所有",
     allRightsReserved: "保留所有权利。",
+    sitePv: "访问",
+    siteUv: "访客",
   },
   pages: {
     tagTitle: "标签",

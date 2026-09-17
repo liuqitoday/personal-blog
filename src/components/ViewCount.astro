@@ -1,0 +1,28 @@
+---
+import IconEye from "@/assets/icons/IconEye.svg";
+import { useTranslations } from "@/i18n";
+
+type Props = {
+  class?: string;
+  size?: "sm" | "lg";
+};
+
+const { size = "sm", class: className = "" } = Astro.props;
+const t = useTranslations(Astro.currentLocale);
+---
+
+<div
+  id="vercount_container_page_pv"
+  class:list={["text-muted-foreground flex items-center gap-x-2", className]}
+>
+  <IconEye
+    class:list={[
+      "inline-block size-6 min-w-5.5",
+      { "scale-90": size === "sm" },
+    ]}
+  />
+  <span class:list={["text-sm", { "sm:text-base": size === "lg" }]}>
+    <span id="vercount_value_page_pv">—</span>
+    {t.post.views}
+  </span>
+</div>

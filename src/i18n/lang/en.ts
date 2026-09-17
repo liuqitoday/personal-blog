@@ -21,6 +21,7 @@ export default {
     editPage: "Edit page",
     previousPost: "Previous Post",
     nextPost: "Next Post",
+    views: "views",
   },
   pagination: {
     prev: "Prev",
@@ -36,6 +37,8 @@ export default {
   footer: {
     copyright: "Copyright",
     allRightsReserved: "All rights reserved.",
+    sitePv: "visits",
+    siteUv: "visitors",
   },
   pages: {
     tagTitle: "Tag",
