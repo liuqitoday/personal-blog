@@ -1,6 +1,6 @@
 ---
 title: "Google Pixel (Android 10) 安装 Magisk 过程记录"
-description: "</a"
+description: "在 macOS 上通过 adb 和 fastboot，为 Google Pixel（Android 10）解锁 bootloader、提取并修补 boot.img，完成 Magisk 安装的完整步骤记录。"
 pubDate: "2021-08-21T16:20:00.000Z"
 updatedDate: "2021-08-22T05:30:24.000Z"
 permalink: "2021/08/22/google_pixel_android_10_install_magisk"

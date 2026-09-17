@@ -39,22 +39,25 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 		</div>
 	</article>
 	<script>
-		import mermaid from 'mermaid';
-
 		const selector = '.prose .mermaid-wrapper > .mermaid';
+		let isRendering = false;
 
-		mermaid.initialize({
-			startOnLoad: false,
-			securityLevel: 'strict',
-			theme: 'neutral',
-		});
-
-		const renderMermaid = () => {
-			if (!document.querySelector(selector)) {
+		const renderMermaid = async () => {
+			if (isRendering || !document.querySelector(selector)) {
 				return;
 			}
 
-			mermaid.run({ querySelector: selector });
+			isRendering = true;
+
+			const { default: mermaid } = await import('mermaid');
+
+			mermaid.initialize({
+				startOnLoad: false,
+				securityLevel: 'strict',
+				theme: 'neutral',
+			});
+
+			await mermaid.run({ querySelector: selector });
 		};
 
 		if (document.readyState === 'loading') {
@@ -88,6 +91,7 @@ const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags = [] 
 	}
 	.post-header h1 {
 		margin-top: 0.3rem;
+		font-size: clamp(2rem, 4.5vw, 3.25rem);
 	}
 	.description {
 		font-size: 1.15rem;
