@@ -1,6 +1,7 @@
 // @ts-check
 
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import remarkMermaid from './src/plugins/remark-mermaid.js';
@@ -21,7 +22,9 @@ const site = normalizeSite(process.env.SITE_URL) ??
 export default defineConfig({
 	site,
 	markdown: {
-		remarkPlugins: [remarkMermaid],
+		processor: unified({
+			remarkPlugins: [remarkMermaid],
+		}),
 		shikiConfig: {
 			theme: 'github-light',
 		},
