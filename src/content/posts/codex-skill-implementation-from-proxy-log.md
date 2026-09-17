@@ -5,10 +5,6 @@ modDatetime: 2026-03-26T08:00:00.000Z
 title: "从一份真实抓包看 Codex 的 Skill 机制：发现、加载、执行与工具循环"
 tags:
   - "AI Agent"
-  - "Codex"
-  - "Skill"
-  - "OpenAI"
-  - "LLM"
 description: "基于一份完整的 Codex proxy 日志，拆解 Codex 如何通过提示词、技能索引、本地文件、函数工具与多轮执行循环来实现 Skill 机制。"
 ---
 

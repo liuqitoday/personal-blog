@@ -5,10 +5,6 @@ modDatetime: 2026-03-26T04:00:00.000Z
 title: "从 ChatBot 到 Coding Agent：AI Agent 的原理、架构与工程化实践"
 tags:
   - "AI Agent"
-  - "LLM"
-  - "ReAct"
-  - "Coding Agent"
-  - "MCP"
 description: "从 ChatBot 与 Agent 的区别讲起，拆解 ReAct、Tool Use、Agentic 架构模式，并补充 Harness、上下文工程、记忆、评测与安全边界，说明一个 Coding Agent 如何真正落地。"
 ---
 

@@ -4,11 +4,6 @@ pubDatetime: 2026-09-17T00:00:00.000Z
 title: "Agent 开发的十条实践心得：工具、上下文与缓存的取舍"
 tags:
   - "AI Agent"
-  - "LLM"
-  - "Context Engineering"
-  - "Prompt Caching"
-  - "Tool Use"
-  - "Claude Code"
 description: "从 Workflow 到上下文工程：十条关于 Agent 工具设计、上下文管理与缓存取舍的实践心得。"
 ---
 

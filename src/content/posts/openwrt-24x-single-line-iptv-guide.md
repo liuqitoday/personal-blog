@@ -4,10 +4,7 @@ pubDatetime: 2026-03-13T10:50:00.000Z
 modDatetime: 2026-03-13T10:50:00.000Z
 title: "终极指南：OpenWrt 24.x 单线复用实现宽带拨号与 IPTV 双网融合"
 tags:
-  - "OpenWrt"
-  - "IPTV"
-  - "VLAN"
-  - "家庭网络"
+  - "网络"
 description: "一份基于 OpenWrt 24.x 的实战教程：在光猫到路由器仅一根网线的场景下，完成 Internet 与 IPTV 的单线复用与双网融合。"
 ---
 

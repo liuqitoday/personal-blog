@@ -5,10 +5,6 @@ modDatetime: 2026-09-17T00:00:00.000Z
 title: "我为什么开始推荐 superpowers"
 tags:
   - "AI Agent"
-  - "Superpowers"
-  - "Agent Skills"
-  - "Claude Code"
-  - "Codex"
 description: "它不是让 Agent 更聪明，而是让它更像一个靠谱的工程师"
 ---
 

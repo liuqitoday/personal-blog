@@ -4,11 +4,7 @@ pubDatetime: 2026-04-11T11:14:00.883Z
 modDatetime: 2026-04-11T11:14:00.883Z
 title: "Home Assistant 自动化避坑指南：解决米家设备与小米中枢虚拟事件的误触发问题"
 tags:
-  - "Home Assistant"
   - "智能家居"
-  - "米家设备"
-  - "自动化"
-  - "故障排查"
 description: "详细分析米家蓝牙无线开关和小米中枢网关虚拟事件在 Home Assistant 重启时的误触发问题，提供三种解决方案包括状态过滤、条件判断和事件置空等方法"
 ---
 
