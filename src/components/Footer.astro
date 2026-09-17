@@ -1,55 +1,30 @@
 ---
-import { EXTERNAL_LINKS, SITE_AUTHOR } from '../consts';
+import type { HTMLAttributes } from "astro/types";
+import Socials from "./Socials.astro";
+import { useTranslations } from "@/i18n";
 
-const today = new Date();
+type Props = {
+  noMarginTop?: boolean;
+} & HTMLAttributes<"footer">;
+
+const { noMarginTop = false, class: className, ...attrs } = Astro.props;
+
+const t = useTranslations(Astro.currentLocale);
+const currentYear = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
-	<p class="copyright">&copy; {today.getFullYear()} {SITE_AUTHOR}. All rights reserved.</p>
-	<p class="summary">Built with Astro, tracked in GitHub, deployed to Cloudflare Pages.</p>
-	<div class="links">
-		{
-			EXTERNAL_LINKS.map((link) => (
-				<a href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined}>
-					{link.label}
-				</a>
-			))
-		}
-	</div>
+<footer
+  class:list={["app-layout", { "mt-auto": !noMarginTop }, className]}
+  {...attrs}
+>
+  <div
+    class="border-border flex flex-col items-center justify-between border-t py-6 sm:flex-row-reverse sm:py-4"
+  >
+    <Socials />
+    <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
+      <span>{t.footer.copyright} &#169; {currentYear}</span>
+      <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
+      <span>{t.footer.allRightsReserved}</span>
+    </div>
+  </div>
 </footer>
-<style>
-	.site-footer {
-		padding: 0 1rem 4rem;
-		text-align: center;
-	}
-	.copyright,
-	.summary {
-		margin: 0;
-		color: rgb(var(--muted));
-	}
-	.summary {
-		margin-top: 0.45rem;
-	}
-	.links {
-		display: flex;
-		justify-content: center;
-		gap: 0.85rem;
-		margin-top: 1.35rem;
-		flex-wrap: wrap;
-	}
-	.links a {
-		display: inline-flex;
-		align-items: center;
-		padding: 0.7rem 1rem;
-		border-radius: 999px;
-		background: rgba(var(--surface), 0.9);
-		border: 1px solid rgba(var(--line), 0.85);
-		text-decoration: none;
-		color: rgb(var(--muted));
-		font-weight: 700;
-	}
-	.links a:hover {
-		color: rgb(var(--ink));
-		background: rgba(var(--accent-soft-rgb), 0.25);
-	}
-</style>

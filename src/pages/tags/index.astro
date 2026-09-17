@@ -1,62 +1,32 @@
 ---
-import SiteLayout from '../../layouts/SiteLayout.astro';
-import { SITE_TITLE } from '../../consts';
-import { getAllTags, getPublishedPosts } from '../../utils/blog';
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import Tag from "@/components/Tag.astro";
+import { getUniqueTags } from "@/utils/getUniqueTags";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
 
-const posts = await getPublishedPosts();
-const tags = getAllTags(posts);
+const posts = await getCollection("posts", ({ data }) => !data.draft);
+const tags = getUniqueTags(posts);
+
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
 ---
 
-<SiteLayout title={`标签 | ${SITE_TITLE}`} description="按标签浏览博客文章。">
-	<section class="page-intro panel">
-		<p class="eyebrow">Tags</p>
-		<h1>标签归档</h1>
-		<p>用标签快速定位主题。当前共有 {tags.length} 个标签。</p>
-	</section>
+<Layout title={`${t.pages.tagsTitle} | ${config.site.title}`}>
+  <Header />
 
-	<section class="tags-grid">
-		{
-			tags.map((item) => (
-				<a class="panel tag-card" href={`/tags/${item.slug}/`}>
-					<span class="name">#{item.tag}</span>
-					<span class="count">{item.count} 篇文章</span>
-				</a>
-			))
-		}
-	</section>
-</SiteLayout>
+  <Breadcrumb />
 
-<style>
-	.page-intro {
-		padding: clamp(1.25rem, 3vw, 2rem);
-		margin-bottom: 1.25rem;
-	}
-	.page-intro p:last-of-type {
-		color: rgb(var(--muted));
-	}
-	.tags-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 1rem;
-	}
-	.tag-card {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		padding: 1.25rem;
-		text-decoration: none;
-	}
-	.name {
-		font-size: 1.1rem;
-		font-weight: 800;
-		color: rgb(var(--ink));
-	}
-	.count {
-		color: rgb(var(--muted));
-	}
-	@media (max-width: 900px) {
-		.tags-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>
+  <Main pageTitle={t.pages.tagsTitle} pageDesc={t.pages.tagsDesc}>
+    <ul class="flex flex-wrap gap-6">
+      {tags.map(({ tag, tagName }) => <Tag {tag} {tagName} />)}
+    </ul>
+  </Main>
+
+  <Footer />
+</Layout>
