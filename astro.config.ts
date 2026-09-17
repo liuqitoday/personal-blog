@@ -31,9 +31,12 @@ function normalizeSite(url: string | undefined) {
     : `https://${url}`;
 }
 
+const isPreviewDeployment =
+  Boolean(process.env.CF_PAGES_BRANCH) && process.env.CF_PAGES_BRANCH !== "main";
+
 const site =
   normalizeSite(process.env.SITE_URL) ??
-  normalizeSite(process.env.CF_PAGES_URL) ??
+  (isPreviewDeployment ? normalizeSite(process.env.CF_PAGES_URL) : undefined) ??
   config.site.url;
 
 export default defineConfig({

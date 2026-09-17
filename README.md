@@ -41,4 +41,4 @@ npm run dev
 
 环境变量：
 
-- `SITE_URL=https://personal-blog.pages.dev`（绑定自定义域名后再改）
+- `SITE_URL=https://blog.100067.xyz`
