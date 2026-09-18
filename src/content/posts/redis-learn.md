@@ -10,62 +10,217 @@ description: "Redis 常用数据类型、单机/主从/哨兵/集群部署，以
 <h2 id="Redis基础笔记-数据类型-部署方式-项目配置"><a href="#Redis基础笔记-数据类型-部署方式-项目配置" class="headerlink" title="Redis基础笔记 - 数据类型&amp;部署方式&amp;项目配置"></a>Redis基础笔记 - 数据类型&amp;部署方式&amp;项目配置</h2><h3 id="Redis-数据类型"><a href="#Redis-数据类型" class="headerlink" title="Redis 数据类型"></a>Redis 数据类型</h3><p>Redis 常用的数据类型：strings（字符串）、Lists（列表）、Hashes（哈希）、Sets（集合）、Sorted sets（有序集合） 等。</p>
 <p>官方文档对于数据类型说明 <a href="https://redis.io/topics/data-types-intro">https://redis.io/topics/data-types-intro</a></p>
 <h4 id="Redis-Strings"><a href="#Redis-Strings" class="headerlink" title="Redis Strings"></a>Redis Strings</h4><p>Redis String 字符串类型，最简单的数据类型。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; set mykey somevalue</span><br><span class="line">OK</span><br><span class="line">&gt; get mykey</span><br><span class="line">&quot;somevalue&quot;</span><br></pre></td></tr></table></figure>
+
+```text
+> set mykey somevalue
+OK
+> get mykey
+"somevalue"
+```
 
 <h4 id="Redis-Lists"><a href="#Redis-Lists" class="headerlink" title="Redis Lists"></a>Redis Lists</h4><p>Redis Lists 存储的字符串类型的元素，是按插入顺序排序的列表。</p>
 
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&gt; rpush mylist A</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; rpush mylist B</span><br><span class="line">(integer) 2</span><br><span class="line">&gt; lpush mylist first</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; lrange mylist 0 -1</span><br><span class="line">1) &quot;first&quot;</span><br><span class="line">2) &quot;A&quot;</span><br><span class="line">3) &quot;B&quot;</span><br><span class="line">&gt; lpop mylist</span><br><span class="line">&quot;first&quot;</span><br><span class="line">&gt; rpop mylist</span><br><span class="line">&quot;B&quot;</span><br><span class="line">&gt; lrange mylist 0 -1</span><br><span class="line">1) &quot;A&quot;</span><br></pre></td></tr></table></figure>
+```text
+> rpush mylist A
+(integer) 1
+> rpush mylist B
+(integer) 2
+> lpush mylist first
+(integer) 3
+> lrange mylist 0 -1
+1) "first"
+2) "A"
+3) "B"
+> lpop mylist
+"first"
+> rpop mylist
+"B"
+> lrange mylist 0 -1
+1) "A"
+```
 
 <h4 id="Redis-Hashes"><a href="#Redis-Hashes" class="headerlink" title="Redis Hashes"></a>Redis Hashes</h4><p>Redis Hashes 是字符串类型的键值对。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&gt; hset myhash name liuqi</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; hget myhash name</span><br><span class="line">&quot;liuqi&quot;</span><br><span class="line">&gt; hmset myhash age 27 website liuqitech.com</span><br><span class="line">OK</span><br><span class="line">&gt; hgetall myhash</span><br><span class="line">1) &quot;name&quot;</span><br><span class="line">2) &quot;liuqi&quot;</span><br><span class="line">3) &quot;age&quot;</span><br><span class="line">4) &quot;27&quot;</span><br><span class="line">5) &quot;website&quot;</span><br><span class="line">6) &quot;liuqitech.com&quot;</span><br></pre></td></tr></table></figure>
+
+```text
+> hset myhash name liuqi
+(integer) 0
+> hget myhash name
+"liuqi"
+> hmset myhash age 27 website liuqitech.com
+OK
+> hgetall myhash
+1) "name"
+2) "liuqi"
+3) "age"
+4) "27"
+5) "website"
+6) "liuqitech.com"
+```
 
 <h4 id="Redis-Sets"><a href="#Redis-Sets" class="headerlink" title="Redis Sets"></a>Redis Sets</h4><p>Redis Sets 是字符串类型的无序集合，不能有重复的元素。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; sadd myset 1 2 3</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; smembers myset</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">&gt; sismember myset 1</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; sismember myset 10</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+```text
+> sadd myset 1 2 3
+(integer) 3
+> smembers myset
+1) "1"
+2) "2"
+3) "3"
+> sismember myset 1
+(integer) 1
+> sismember myset 10
+(integer) 0
+```
 
 <h4 id="Redis-Sorted-sets"><a href="#Redis-Sorted-sets" class="headerlink" title="Redis Sorted sets"></a>Redis Sorted sets</h4><p>Redis Sorted sets 与 Redis Sets 不同的是，每一个元素都会关联一个浮点数类型的分数。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; zadd hackers 1940 &quot;Alan Kay&quot;</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; zadd hackers 1957 &quot;Sophie Wilson&quot;</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; zadd hackers 1953 &quot;Richard Stallman&quot;</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; zadd hackers 1949 &quot;Anita Borg&quot;</span><br><span class="line">&gt; zrange hackers 0 -1</span><br><span class="line">1) &quot;Alan Kay&quot;</span><br><span class="line">2) &quot;Anita Borg&quot;</span><br><span class="line">3) &quot;Richard Stallman&quot;</span><br><span class="line">4) &quot;Sophie Wilson&quot;</span><br></pre></td></tr></table></figure>
+
+```text
+> zadd hackers 1940 "Alan Kay"
+(integer) 1
+> zadd hackers 1957 "Sophie Wilson"
+(integer) 1
+> zadd hackers 1953 "Richard Stallman"
+(integer) 1
+> zadd hackers 1949 "Anita Borg"
+> zrange hackers 0 -1
+1) "Alan Kay"
+2) "Anita Borg"
+3) "Richard Stallman"
+4) "Sophie Wilson"
+```
 
 <h3 id="Redis-部署方式"><a href="#Redis-部署方式" class="headerlink" title="Redis 部署方式"></a>Redis 部署方式</h3><p>单机、主从、哨兵、集群</p>
 <h4 id="单机"><a href="#单机" class="headerlink" title="单机"></a>单机</h4><p>单机方式没什么好说的，使用默认的配置文件启动即可。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-server redis.conf</span><br></pre></td></tr></table></figure>
+
+```bash
+./redis-server redis.conf
+```
 
 <h4 id="主从复制-（replication）"><a href="#主从复制-（replication）" class="headerlink" title="主从复制 （replication）"></a>主从复制 （replication）</h4><p>配置主从复制方式非常简单，只需要在 slave 的配置文件中添加如下配置：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slaveof 192.168.1.1 6379</span><br></pre></td></tr></table></figure>
+
+```text
+slaveof 192.168.1.1 6379
+```
 
 <p>其中 192.168.1.1 6379 为 master 的IP和端口</p>
 <p>官方文档 <a href="https://redis.io/topics/replication">https://redis.io/topics/replication</a></p>
 <h4 id="哨兵（Sentinel）"><a href="#哨兵（Sentinel）" class="headerlink" title="哨兵（Sentinel）"></a>哨兵（Sentinel）</h4><p>哨兵是在主从复制的基础上进行的增强方案。原主从复制的方式中，若master宕机，无法进行主从切，所以会引发一些故障。哨兵可以监控多个，master-slave集群，若发现其中的master宕机时，会把该master下的slave转换为master，同时原master下的slave也会slaveof为新的master。</p>
 <p>哨兵启动的方式有以下两种，sentinel的默认端口为26379。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-sentinel /path/to/sentinel.conf</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure>
+```text
+redis-sentinel /path/to/sentinel.conf
+```
+
+```text
+redis-server /path/to/sentinel.conf --sentinel
+```
 
 <p>我们需要配置监听的master，slave无需手动配置。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
+
+```text
+sentinel monitor mymaster 127.0.0.1 6379 2
+sentinel down-after-milliseconds mymaster 60000
+sentinel failover-timeout mymaster 180000
+sentinel parallel-syncs mymaster 1
+
+sentinel monitor resque 192.168.1.3 6380 4
+sentinel down-after-milliseconds resque 10000
+sentinel failover-timeout resque 180000
+sentinel parallel-syncs resque 5
+```
 
 <p>以上为监听两个master的例子。sentinel monitor 语句参数的含义如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor &lt;master-group-name&gt; &lt;ip&gt; &lt;port&gt; &lt;quorum&gt;</span><br></pre></td></tr></table></figure>
+
+```text
+sentinel monitor <master-group-name> <ip> <port> <quorum>
+```
 
 <p>其中quorum的意义为，当sentinel为集群时，若quorum为2，此时其中监听的一个master发生了宕机，当有2个sentinel认为它为不可用状态的时候才会真正判定该master已经为不可用状态。</p>
 <p>官方文档 <a href="https://redis.io/topics/sentinel">https://redis.io/topics/sentinel</a></p>
 <h4 id="集群-（cluster）"><a href="#集群-（cluster）" class="headerlink" title="集群 （cluster）"></a>集群 （cluster）</h4><p>按照文档做个简单的搭建，复制6份redis到文件夹（如 7000 7001 7002 7003 7004 7005），7000到7005的redis.conf分别按以下模板进行配置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">port 7000</span><br><span class="line">cluster-enabled yes</span><br><span class="line">cluster-config-file nodes.conf</span><br><span class="line">cluster-node-timeout 5000</span><br><span class="line">appendonly yes</span><br></pre></td></tr></table></figure>
+
+```text
+port 7000
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+```
 
 <p>分别启动这6个reids实例，然后redis-cli创建集群（5以上版本）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 --cluster-replicas 1</span><br></pre></td></tr></table></figure>
+
+```bash
+./redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 --cluster-replicas 1
+```
 
 <p>官方文档 <a href="https://redis.io/topics/cluster-tutorial">https://redis.io/topics/cluster-tutorial</a></p>
 <h3 id="Spring-Boot-配置"><a href="#Spring-Boot-配置" class="headerlink" title="Spring Boot 配置"></a>Spring Boot 配置</h3><p>我demo中使用的 Spring Boot 版本为 <code>2.1.6.RELEASE</code></p>
 <p>添加依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
 
 <p>查看依赖可知现在版本的使用的默认的reids客户端为 <code>Lettuce</code></p>
 <p>通过查看<code>LettuceConnectionConfiguration</code> 可发现，它可以为我们初始化一个 <code>RedisTemplate&lt;Object, Object&gt;</code> 类型的 redisTemplate，和一个 <code>RedisTemplate&lt;String, String&gt;</code> 类型的 stringRedisTemplate。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ConditionalOnClass(RedisOperations.class)</span><br><span class="line">@EnableConfigurationProperties(RedisProperties.class)</span><br><span class="line">@Import(&#123; LettuceConnectionConfiguration.class, JedisConnectionConfiguration.class &#125;)</span><br><span class="line">public class RedisAutoConfiguration &#123;</span><br><span class="line"></span><br><span class="line">	@Bean</span><br><span class="line">	@ConditionalOnMissingBean(name = &quot;redisTemplate&quot;)</span><br><span class="line">	public RedisTemplate&lt;Object, Object&gt; redisTemplate(RedisConnectionFactory redisConnectionFactory)</span><br><span class="line">			throws UnknownHostException &#123;</span><br><span class="line">		RedisTemplate&lt;Object, Object&gt; template = new RedisTemplate&lt;&gt;();</span><br><span class="line">		template.setConnectionFactory(redisConnectionFactory);</span><br><span class="line">		return template;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Bean</span><br><span class="line">	@ConditionalOnMissingBean</span><br><span class="line">	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory)</span><br><span class="line">			throws UnknownHostException &#123;</span><br><span class="line">		StringRedisTemplate template = new StringRedisTemplate();</span><br><span class="line">		template.setConnectionFactory(redisConnectionFactory);</span><br><span class="line">		return template;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+```java
+@Configuration
+@ConditionalOnClass(RedisOperations.class)
+@EnableConfigurationProperties(RedisProperties.class)
+@Import({ LettuceConnectionConfiguration.class, JedisConnectionConfiguration.class })
+public class RedisAutoConfiguration {
+
+	@Bean
+	@ConditionalOnMissingBean(name = "redisTemplate")
+	public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory)
+			throws UnknownHostException {
+		RedisTemplate<Object, Object> template = new RedisTemplate<>();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory)
+			throws UnknownHostException {
+		StringRedisTemplate template = new StringRedisTemplate();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
+	}
+
+}
+```
 
 <p>后面的例子中为了方便测试，直接注入<code>stringRedisTemplate</code> 来使用，当然你也可以自定义自己需要类型的 RedisTemplate。针对不同的部署方式，修改application.yml 配置文件如下：</p>
-<h4 id="单机-1"><a href="#单机-1" class="headerlink" title="单机"></a>单机</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  redis:</span><br><span class="line">    host: 127.0.0.1</span><br><span class="line">    port: 6379</span><br></pre></td></tr></table></figure>
+<h4 id="单机-1"><a href="#单机-1" class="headerlink" title="单机"></a>单机</h4>
 
-<h4 id="哨兵"><a href="#哨兵" class="headerlink" title="哨兵"></a>哨兵</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  redis:</span><br><span class="line">    sentinel:</span><br><span class="line">	  master: mymaster</span><br><span class="line">	  nodes: 127.0.0.1:26379, 127.0.0.1:26380</span><br></pre></td></tr></table></figure>
+```text
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+```
 
-<h4 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  redis:</span><br><span class="line">    cluster:</span><br><span class="line">	  nodes: 127.0.0.1:7000, 127.0.0.1:7001, 127.0.0.1:7002, 127.0.0.1:7003, 127.0.0.1:7004, 127.0.0.1:7005</span><br></pre></td></tr></table></figure>
+<h4 id="哨兵"><a href="#哨兵" class="headerlink" title="哨兵"></a>哨兵</h4>
+
+```text
+spring:
+  redis:
+    sentinel:
+	  master: mymaster
+	  nodes: 127.0.0.1:26379, 127.0.0.1:26380
+```
+
+<h4 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h4>
+
+```text
+spring:
+  redis:
+    cluster:
+	  nodes: 127.0.0.1:7000, 127.0.0.1:7001, 127.0.0.1:7002, 127.0.0.1:7003, 127.0.0.1:7004, 127.0.0.1:7005
+```
+

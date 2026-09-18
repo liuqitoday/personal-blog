@@ -11,4 +11,30 @@ description: "用 PushBear 做微信模板一对多推送，附一份喝水提�
 <h3 id="接入说明"><a href="#接入说明" class="headerlink" title="接入说明"></a>接入说明</h3><p>详见官网 <a href="http://pushbear.ftqq.com/">http://pushbear.ftqq.com</a></p>
 
 <h3 id="DEMO"><a href="#DEMO" class="headerlink" title="DEMO"></a>DEMO</h3><p>废话不多说，直接贴代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> apscheduler.schedulers.blocking <span class="keyword">import</span> BlockingScheduler</span><br><span class="line"></span><br><span class="line"><span class="keyword">global</span> times</span><br><span class="line">times = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">remind</span>():</span><br><span class="line">    <span class="keyword">global</span> times</span><br><span class="line">    sendkey = <span class="string">&#x27;此处换成自己的&#x27;</span></span><br><span class="line">    text = <span class="string">&#x27;提醒喝水小助手&#x27;</span></span><br><span class="line">    desp = <span class="string">&#x27;这是今天第&#x27;</span> + <span class="built_in">str</span>(times) + <span class="string">&#x27;次提醒你喝水啦&#x27;</span></span><br><span class="line">    payload = &#123;<span class="string">&#x27;sendkey&#x27;</span>: sendkey, <span class="string">&#x27;text&#x27;</span>: text, <span class="string">&#x27;desp&#x27;</span>: desp&#125;</span><br><span class="line">    requests.post(<span class="string">&quot;https://pushbear.ftqq.com/sub&quot;</span>, data=payload)</span><br><span class="line">    times  = times + <span class="number">1</span></span><br><span class="line">    now_hour = datetime.datetime.now().hour</span><br><span class="line">    <span class="keyword">if</span> now_hour &gt;= <span class="number">21</span>:</span><br><span class="line">        times = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    sched = BlockingScheduler()</span><br><span class="line">    sched.add_job(remind, <span class="string">&#x27;cron&#x27;</span>, hour=<span class="string">&#x27;10,11,14,15,16,17,18,21&#x27;</span>, minute=<span class="number">6</span>)</span><br><span class="line">    sched.start()</span><br></pre></td></tr></table></figure>
+
+```python
+import requests
+import datetime
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+global times
+times = 1
+
+def remind():
+    global times
+    sendkey = '此处换成自己的'
+    text = '提醒喝水小助手'
+    desp = '这是今天第' + str(times) + '次提醒你喝水啦'
+    payload = {'sendkey': sendkey, 'text': text, 'desp': desp}
+    requests.post("https://pushbear.ftqq.com/sub", data=payload)
+    times  = times + 1
+    now_hour = datetime.datetime.now().hour
+    if now_hour >= 21:
+        times = 1
+
+if __name__ == "__main__":
+    sched = BlockingScheduler()
+    sched.add_job(remind, 'cron', hour='10,11,14,15,16,17,18,21', minute=6)
+    sched.start()
+```
+
