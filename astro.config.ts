@@ -44,8 +44,15 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: page =>
-        config.features?.showArchives !== false || !page.endsWith("/archives/"),
+      filter: page => {
+        if (config.features?.showArchives === false && page.endsWith("/archives/")) {
+          return false;
+        }
+        if (/\/posts\/\d+\/$/.test(page) || /\/tags\/[^/]+\/\d+\/$/.test(page)) {
+          return false;
+        }
+        return true;
+      },
     }),
   ],
   i18n: {
