@@ -44,16 +44,8 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: page => {
-        if (config.features?.showArchives === false && page.endsWith("/archives/")) {
-          return false;
-        }
-        // Filter out pagination pages from sitemap
-        if (/\/posts\/\d+\/$/.test(page) || /\/tags\/[^/]+\/\d+\/$/.test(page)) {
-          return false;
-        }
-        return true;
-      },
+      filter: page =>
+        config.features?.showArchives !== false || !page.endsWith("/archives/"),
     }),
   ],
   i18n: {
