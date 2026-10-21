@@ -100,9 +100,32 @@ Clash Verge 的“扩展配置”（旧版本叫 Merge / 合并）不是简单�
 > **全局扩展配置 vs 订阅扩展配置**
 > 全局扩展对多数订阅生效，适合放通用的 DNS、认证、并发设置；订阅扩展只对单个订阅生效。两者都写时会依次执行，后者会整体覆盖前者的同名 `dns` 字段。如果发现全局配置里的 `nameserver-policy` 被订阅扩展覆盖了，把内网策略也写进订阅扩展，或用扩展脚本逐条追加（脚本最后执行）。
 
-### 1.4 DNS 分流：内网域名走公司 DNS，公网域名走公网 DNS
+### 1.4 DNS：先确认公司 DNS 够不够用，再决定要不要分流
 
-出口端是整个链路的终点，它必须拿到**真实 IP** 才能建连，因此这里**不能使用 fake-ip 模式**。用 `nameserver-policy` 按域名后缀分流即可，不需要把内网域名一个个列出来：
+出口端是整个链路的终点，它必须拿到**真实 IP** 才能建连，因此这里**不能使用 fake-ip 模式**。
+
+#### 先想清楚：你的公司 DNS 是不是"全能 DNS"
+
+在决定怎么改之前，先问自己一个问题：**公司的 DNS 能不能同时正确解析内网域名和公网域名？**
+
+绝大多数企业网络里，答案是**能**。公司 DNS 通常会把公网查询递归转发出去。这种情况下，出口端的 DNS **完全不需要改**——保持使用系统 DNS（即公司 DNS）就是最优解，改动反而会引入下面的问题。
+
+真正值得改的场景只有两个：
+
+1. 公司 DNS 对某些公网域名返回**污染结果**或解析超时；
+2. 公司 DNS 明显慢，且你想让公网域名走加密 DoH。
+
+#### 关键陷阱：公网域名可能有内网解析结果
+
+这是最容易踩的坑，也是不少"改完 DNS 内网网站就打不开"的根因：
+
+**有些内网服务使用的是公网域名，但公司 DNS 会把它解析到内网 IP。** 例如 `gitlab.company.com` 这种域名，从公网看是一个正常的公网站点，从公司内网看却可能被公司 DNS 解析到 `10.x` 的内网地址。
+
+如果你把公司 DNS 和公网 DoH 放进**同一个 `nameserver` 列表**，mihomo 会**并发查询、谁先回用谁**（`common/picker/picker.go` 的 `Wait` 取第一个成功结果）。于是公网 DoH 完全可能抢先返回一个公网 IP，你从内网去连这个公网 IP，结果就是打不开。
+
+> **结论：只要你的公司 DNS 是"全能 DNS"，就把公司 DNS 单独作为 `nameserver`，不要和公网 DNS 并列。** 需要加密时，用 `nameserver-policy` 把明确的公网域名单独指到 DoH，而不是反过来。
+
+#### 推荐写法：公司 DNS 为主
 
 ```yaml
 # 追加到出口端的扩展配置中
@@ -119,31 +142,46 @@ dns:
     - 10.0.0.53               # ⚠️ 换成公司内网 DNS
     - 10.0.0.54
 
-  # 关键：公司 DNS 与公网 DoH 放在同一个列表里
-  # mihomo 的语义是并发查询、最快者胜（dns/util.go 的 batchExchange）
-  # 内网域名由公司 DNS 快速答出，公网域名由 DoH 答出
+  # 主力：公司 DNS。它既能解析内网域名，也能递归解析公网域名
   nameserver:
     - 10.0.0.53               # ⚠️ 换成公司内网 DNS
     - 10.0.0.54
+
+  # 可选：只把明确需要绕开公司 DNS 的公网域名指到 DoH
+  # 注意这里列的是"公网域名"，不是内网域名
+  # nameserver-policy:
+  #   '+.github.com':
+  #     - https://dns.alidns.com/dns-query
+```
+
+#### 什么时候才需要内网后缀分流
+
+只有一种情况：**公司 DNS 不递归，或者对公网解析很差**，你想让公网走 DoH，同时保住内网解析。这时用 `nameserver-policy` 把内网后缀指到公司 DNS：
+
+```yaml
+dns:
+  enable: true
+  enhanced-mode: redir-host
+  default-nameserver:
+    - 10.0.0.53
+    - 10.0.0.54
+  nameserver:                    # 默认走公网
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
-
-  # 可选：仅当某个内网域名与公网域名同名、必须强制走公司 DNS 时才写
-  # '+.' 表示"该域名本身及其所有子域"，不需要列出具体主机名
-  nameserver-policy:
-    '+.corp.example.com':     # ⚠️ 换成公司内网域名后缀
+  nameserver-policy:             # 内网后缀强制走公司 DNS
+    '+.corp.example.com':
       - 10.0.0.53
       - 10.0.0.54
 ```
 
-几个要点：
+**这种写法的风险**：`nameserver-policy` 命中后**不会再问默认 `nameserver`**（`dns/resolver.go` 的 `ipExchange`），所以任何**没列出**的内网域名都会被公网 DoH 解析——如果它恰好是公网域名却在内网有解析结果，同样会打不开。这也是为什么推荐上一节的"公司 DNS 为主"写法。
+
+#### 其他要点
 
 * **`+.corp.example.com` 一行覆盖该域名及其所有子域**：`corp.example.com`、`wiki.corp.example.com`、`git.corp.example.com`、`a.b.corp.example.com` 全部命中，**不需要知道内网到底有多少个服务**。
-* **为什么把公司 DNS 也放进 `nameserver`**：`nameserver-policy` 命中后不会再问默认 `nameserver`，所以**未列出的内网域名不会自动回退到公司 DNS**。把公司 DNS 作为 `nameserver` 的成员，可以让所有未知内网域名也得到正确解析。源码里同一 `nameserver` 列表是并发查询、最快响应胜出（`dns/util.go` 的 `batchExchange`），内网域名由公司 DNS 先答，公网域名由 DoH 答，两者互不阻塞。
-* **副作用**：公网域名也会同时发给公司 DNS。如果公司 DNS 对某些域名返回污染结果或抢答，用 `nameserver-policy` 把这些公网域名显式指向 DoH 即可。注意列表是并发而非顺序，把公司 DNS 放到后面并不会降低它的优先级。
-* 如果你不确定内网后缀，可以在出口端执行 `ipconfig /all`，查看 `Connection-specific DNS Suffix`，那通常就是主内网域。
-* 如果公司网络封了 DoH（HTTPS 出站），把其中的 DoH 换成 `223.5.5.5`、`119.29.29.29` 这类明文 DNS 即可。
+* **确认内网后缀**：在出口端执行 `ipconfig /all`，查看 `Connection-specific DNS Suffix`，那通常就是主内网域。但注意——**内网服务不一定都用内网后缀**，见上面的"关键陷阱"。
 * **换公网 DNS 并不能解决"某个公网 IP 连不上"的问题**：对未接入 Cloudflare 中国网络的站点，任何递归 DNS 返回的都是同一组 anycast IP。DNS 分流解决的是"解析准确、互不干扰"，连通性问题要靠 `tcp-concurrent` 或对外节点（见痛点五）。
+* **排错顺序**：改完 DNS 后如果某个内网网站打不开，先用 `nslookup 域名 公司DNS` 和 `nslookup 域名 公网DNS` 对比结果。两者返回不同 IP 时，说明这是"公网域名有内网解析"的情况，必须让公司 DNS 优先。
 
 ### 1.5 防火墙放行 TCP 和 UDP
 
@@ -203,20 +241,17 @@ dns:
     - 10.0.0.54
     - 223.5.5.5
 
-  # 默认解析器：公网 DoH + 公司 DNS 同列表
-  # 并发查询、最快者胜，内网域名由公司 DNS 答，公网域名由 DoH 答
+  # 公司 DNS 为主：它既能解析内网域名，也能递归解析公网域名
+  # 不要把公网 DoH 和公司 DNS 并列——并发时公网 DNS 可能抢先返回
+  # 错误的公网 IP，导致"公网域名有内网解析"的站点打不开
   nameserver:
     - 10.0.0.53               # ⚠️ 换成公司内网 DNS
     - 10.0.0.54
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
 
-  # 可选：仅当内网域名与公网域名同名、必须强制走公司 DNS 时才写
-  # '+.' 覆盖该域及其所有子域，无需列出具体主机名
-  nameserver-policy:
-    '+.corp.example.com':     # ⚠️ 换成公司内网域名后缀
-      - 10.0.0.53
-      - 10.0.0.54
+  # 可选：只把明确要绕开公司 DNS 的公网域名指到 DoH
+  # nameserver-policy:
+  #   '+.github.com':
+  #     - https://dns.alidns.com/dns-query
 
   # 内网域名不分配 fake-ip，返回真实 IP
   # 这样 ping、按 IP 直连的数据库工具、RDP 等都正常
@@ -243,7 +278,7 @@ rules:
 
 > **为什么客户端也要把公司 DNS 放进 `nameserver`？**
 > 因为 `fake-ip-filter` 让内网域名拿真实 IP，而真实 IP 必须由某个 DNS 解析出来。如果 `nameserver` 里只有公网 DoH，公网 DNS 不认识内网域名，解析就会失败。
-> 把公司 DNS 和 DoH 放在同一个 `nameserver` 列表里，mihomo 会并发查询、取最快响应（`dns/util.go` 的 `batchExchange`）：内网域名由公司 DNS 答出，公网域名由 DoH 答出。`nameserver-policy` 只在需要强制某个域名走公司 DNS 时才用，**不是**用来列举内网域名的——没列出的内网域名照样能被公司 DNS 解析。
+> 但**不要把公司 DNS 和公网 DoH 并列在同一个列表里**：mihomo 对同一列表是并发查询、取第一个成功结果（`common/picker/picker.go` 的 `Wait`），公网 DoH 可能抢先返回一个公网 IP，导致"公网域名有内网解析"的站点打不开。正确做法是让公司 DNS 单独作为 `nameserver`，只在确需绕开时用 `nameserver-policy` 把个别公网域名指到 DoH。
 
 ### 2.2 激活系统级拦截
 
@@ -387,6 +422,26 @@ curl -I https://www.google.com
 > **解决办法**：
 > 1. 在出口端开启 `tcp-concurrent: true`，让 mihomo 对解析出的所有 IP 并发拨号，只要有一个通就能连上。这能解决"一个 IP 通、另一个不通"的情况。
 > 2. 如果并发后仍然全部超时，说明公司出口到该 IP 段整体不可达。此时只能在出口端再加一个真正的对外代理节点，并把规则改成"内网与国内直连、其余走节点"。DNS 层面无解。
+>
+> **性能代价**：并发拨号并非只有收益。`component/dialer/dialer.go` 的 `parallelDialContext` 会对所有 IP 同时建连，然后**等全部返回后才采用第一个成功结果**（`common/picker/picker.go` 的 `Wait` 是 `wg.Wait()`）。所以当所有 IP 都通时，单次连接的耗时会向**最慢的那个 IP** 看齐，并且会多消耗几倍于平时的连接。它适合"部分 IP 不通"的网络，不适合"全部通畅"的网络。
+
+> **痛点七：改完 DNS 后，某个内网网站打不开了？**
+>
+> **典型现象**：`gitlab.公司公网域名.cn` 这类站点，改 DNS 前正常，改后打不开；`nslookup` 却又能返回一个 IP。
+>
+> **原因**：这个域名是**公网域名**，但公司 DNS 对内网用户返回的是内网 IP。你把公司 DNS 和公网 DoH 并列在 `nameserver` 里后，公网 DoH 抢先返回了公网 IP，而公网 IP 从内网访问不一定可达，或不是同一个服务实例。
+>
+> **解决办法**：
+> 1. **回退到"公司 DNS 单独作为 nameserver"**。只要公司 DNS 能递归解析公网域名，这就是最简单也最可靠的做法，DNS 分流在绝大多数企业网络里收益有限。
+> 2. 对比解析结果定位问题域名：
+>
+> ```bash
+> nslookup gitlab.example.cn 公司DNS
+> nslookup gitlab.example.cn 223.5.5.5
+> ```
+>
+> 两者结果不同，就属于本篇所说的情况，必须以公司 DNS 的结果为准。
+> 3. 如果确实需要公网 DoH，用 `nameserver-policy` 把内网后缀**以及这类"公网域名有内网解析"的域名**显式指向公司 DNS，并且接受"未知域名可能解析错误"的风险。
 
 > **痛点六：出口端暴露在局域网，被别人扫到或白嫖？**
 >
